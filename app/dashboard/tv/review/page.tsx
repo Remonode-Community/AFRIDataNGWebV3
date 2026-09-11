@@ -12,7 +12,6 @@ import {
   Wallet,
   Tv,
 } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Card } from '@/components/shared/Card';
 import { Button } from '@/components/shared/Button';
@@ -149,28 +148,24 @@ export default function TVReviewPage() {
       setIsProcessing(true);
       setTransactionStatus('processing');
 
-      const requestId = uuidv4();
-      console.log('[TVReview] Processing payment with request ID:', requestId);
-
       const paymentData = {
-        amount: formData.variationAmount || '0',
-        billersCode: formData.smartcard || '',
-        email: user.email || '',
-        phone: user.phone_number || '',
-        request_id: requestId,
         serviceID: formData.provider,
+        phone: user.phone_number || '',
+        amount: parseFloat(formData.variationAmount || '0'),
+        billersCode: formData.smartcard || '',
         variation_code: formData.variationCode,
         user_id: user.id || 0,
       };
 
       console.log('[TVReview] Payment data:', paymentData);
 
-      const response = await vtuService.processPayment(paymentData);
+      const response = await paymentService.purchaseElectricity(paymentData);
 
       console.log('[TVReview] Payment response:', response);
 
-      if (response?.status === 'success' || response?.message === 'successful') {
-        setTransactionId(requestId);
+      if (response?.success) {
+        const backendRequestId = (response as any)?.transaction?.reference || '';
+        setTransactionId(backendRequestId);
         setTransactionStatus('success');
 
         // Clear stored data
@@ -179,13 +174,13 @@ export default function TVReviewPage() {
         }
 
         addToast({
-          message: `TV subscription successful! Transaction ID: ${requestId}`,
+          message: `TV subscription successful!`,
           type: 'success',
         });
 
         // Redirect after 3 seconds
         setTimeout(() => {
-          router.push(`/dashboard/tv-history?id=${requestId}`);
+          router.push(`/dashboard/history`);
         }, 3000);
       } else {
         setTransactionStatus('error');

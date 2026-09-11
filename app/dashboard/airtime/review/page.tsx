@@ -12,8 +12,6 @@ import {
   ShieldCheck,
   Wallet,
 } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
-
 import { Card } from '@/components/shared/Card';
 import { Button } from '@/components/shared/Button';
 import { Toast } from '@/components/shared/Toast';
@@ -100,18 +98,13 @@ export default function AirtimeReviewPage() {
     setTransactionStatus('processing');
 
     try {
-      const now = new Date();
-      const requestId = `${now.getFullYear()}${String(
-        now.getMonth() + 1
-      ).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${Date.now()}${uuidv4().slice(0, 8)}`;
-
       const airtimePayload = {
-        provider: formData.provider,
-        phone_number: formData.phone.replace(/\s/g, ''),
+        serviceID: formData.provider,
+        phone: formData.phone.replace(/\s/g, ''),
         amount: parseInt(formData.amount),
-        user_id: user?.id?.toString(),
+        user_id: user?.id,
         payment_method: paymentMethod as 'wallet' | 'card' | 'mobile_money',
-        request_id: requestId,
+        pin,
       };
 
       console.log('[AirtimeReview] Airtime purchase request prepared:', airtimePayload);
@@ -123,49 +116,31 @@ export default function AirtimeReviewPage() {
       const response = await paymentService.purchaseAirtime(airtimePayload);
       console.log('[AirtimeReview] Purchase response received:', response);
 
-      if (response.success && response.data) {
-        // Now confirm with PIN if needed
-        console.log('[AirtimeReview] Confirming purchase with PIN...');
-        const confirmResponse = await paymentService.confirmAirtimePurchase(
-          requestId,
-          { pin, request_id: requestId }
-        );
-        
-        console.log('[AirtimeReview] PIN confirmation response:', confirmResponse);
+      if (response.success) {
+        const backendRequestId = (response as any).transaction?.reference;
+        setTransactionId(backendRequestId || '');
+        setTransactionStatus('success');
+        setShowPINModal(false);
 
-        if (confirmResponse.success) {
-          setTransactionId(confirmResponse.data?.id || requestId);
-          setTransactionStatus('success');
-          setShowPINModal(false);
-
-          if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('airtimeFormData');
-          }
-
-          addToast({
-            message: 'Airtime purchased successfully!',
-            type: 'success',
-          });
-
-          console.log('[AirtimeReview] Transaction successful, redirecting in 3 seconds...');
-          setTimeout(() => {
-            router.push('/dashboard/history');
-          }, 2500);
-        } else {
-          console.warn('[AirtimeReview] PIN confirmation failed:', confirmResponse);
-          setTransactionStatus('error');
-          addToast({
-            message: confirmResponse.message || 'PIN verification failed. Please try again.',
-            type: 'error',
-          });
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('airtimeFormData');
         }
+
+        addToast({
+          message: 'Airtime purchased successfully!',
+          type: 'success',
+        });
+
+        console.log('[AirtimeReview] Transaction successful, redirecting in 3 seconds...');
+        setTimeout(() => {
+          router.push('/dashboard/history');
+        }, 2500);
       } else {
-        console.warn('[AirtimeReview] Purchase failed - unexpected response:', response);
+        console.warn('[AirtimeReview] Purchase failed:', response);
         setShowPINModal(false);
         setTransactionStatus('error');
         
-        // Handle specific error codes
-        if ((response as any)?.error_code === 'INSUFFICIENT_USER_BALANCE') {
+        if ((response as any)?.code === 'INSUFFICIENT_USER_BALANCE') {
           addToast({
             message: 'Insufficient wallet balance. Please top up your wallet and try again.',
             type: 'error',
@@ -180,7 +155,6 @@ export default function AirtimeReviewPage() {
     } catch (error: any) {
       console.error('[AirtimeReview] Payment error:', error);
       
-      // Handle idempotency errors
       if (error.isDuplicateError) {
         addToast({
           message: 'This airtime purchase has already been processed. Please check your history.',

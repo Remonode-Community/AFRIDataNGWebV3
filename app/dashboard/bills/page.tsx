@@ -13,7 +13,6 @@ import { Spinner } from '@/components/shared/Spinner';
 import { ChevronRight, Check, Zap, AlertCircle, Loader } from 'lucide-react';
 import { PINVerificationModal } from '@/components/shared/PINVerificationModal';
 import { paymentService } from '@/services/payment.service';
-import { generateIdempotencyKey } from '@/utils/idempotency.utils';
 import { formatCurrency } from '@/utils/format.utils';
 import { useAuth } from '@/hooks/useAuth';
 import { VTUProvider } from '@/types/vtu.types';
@@ -177,7 +176,6 @@ export default function BillsPage() {
 
     try {
       const billersCode = selectedProvider.biller_code || selectedProvider.biller_id || selectedProvider.serviceID;
-      const requestId = generateIdempotencyKey();
 
       const paymentPayload = {
         serviceID: 'electricity-bill',
@@ -188,14 +186,17 @@ export default function BillsPage() {
         user_id: user.id,
         user_email: email,
         payment_method: paymentMethod,
-        request_id: requestId,
+        pin,
       };
 
       const paymentResult = await execute(
         paymentService.purchaseElectricity(paymentPayload)
       );
 
-      if (!paymentResult?.success) {
+      if (paymentResult?.success) {
+        success('Electricity bill payment successful!');
+        router.push('/dashboard/history');
+      } else {
         const errorCode = (paymentResult as any)?.code || paymentResult?.error_code;
         if (errorCode === 'INSUFFICIENT_USER_BALANCE') {
           const required = parseInt(amount);
@@ -208,29 +209,9 @@ export default function BillsPage() {
             currentBalance: current,
             shortfall: Math.max(0, shortfall),
           });
-          setShowPINModal(false);
-          return;
+        } else {
+          alertError(paymentResult?.message || 'Payment failed');
         }
-
-        alertError(paymentResult?.message || 'Payment failed');
-        setShowPINModal(false);
-        return;
-      }
-
-      // Confirm payment with PIN
-      const confirmResult = await execute(
-        paymentService.confirmPayment({
-          request_id: requestId,
-          pin,
-          user_id: user.id,
-        })
-      );
-
-      if (confirmResult?.success) {
-        success('Electricity bill payment successful!');
-        router.push('/dashboard/history');
-      } else {
-        alertError(confirmResult?.message || 'Payment confirmation failed');
         setShowPINModal(false);
       }
     } catch (err: any) {

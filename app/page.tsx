@@ -74,13 +74,6 @@ const networkColors: Record<string, { border: string; bg: string; text: string }
   '9mobile': { border: 'border-green-500', bg: 'bg-green-500', text: 'text-white' },
 };
 
-const stats = [
-  { value: '500K+', label: 'Active Users' },
-  { value: '₦2B+', label: 'Transactions Processed' },
-  { value: '99.9%', label: 'Platform Uptime' },
-  { value: '< 5s', label: 'Average Delivery Time' },
-];
-
 const steps = [
   {
     n: '01',
@@ -362,24 +355,6 @@ export default function Home() {
               <AdCarousel />
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="w-full border-y border-gray-100 bg-gray-50">
-        <div className="grid w-full grid-cols-2 lg:grid-cols-4 px-4 sm:px-8 lg:px-16">
-          {stats.map((stat, index) => (
-            <div
-              key={stat.label}
-              className={`px-4 py-8 text-center ${
-                index < stats.length - 1 ? 'border-r border-gray-200' : ''
-              }`}
-            >
-              <div className="mb-1 text-3xl font-extrabold tracking-tight text-[#0a0a0a] sm:text-4xl">
-                {stat.value}
-              </div>
-              <div className="text-sm font-medium text-[#888]">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </section>
 

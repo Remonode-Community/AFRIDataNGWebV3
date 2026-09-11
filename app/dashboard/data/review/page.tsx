@@ -13,8 +13,6 @@ import {
   Wallet,
   Wifi,
 } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
-
 import { Card } from '@/components/shared/Card';
 import { Button } from '@/components/shared/Button';
 import { Input } from '@/components/shared/Input';
@@ -126,19 +124,14 @@ export default function DataReviewPage() {
     setTransactionStatus('processing');
 
     try {
-      const now = new Date();
-      const requestId = `${now.getFullYear()}${String(
-        now.getMonth() + 1
-      ).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${Date.now()}${uuidv4().slice(0, 8)}`;
-
       const dataPayload = {
-        service_id: formData.provider,
+        serviceID: formData.provider,
         variation_code: formData.variationCode,
         amount: parseInt(formData.variationAmount || '0'),
-        phone_number: phoneNumber.replace(/\s/g, ''),
-        user_id: user?.id?.toString(),
+        phone: phoneNumber.replace(/\s/g, ''),
+        user_id: user?.id,
         payment_method: paymentMethod as 'wallet' | 'card' | 'mobile_money',
-        request_id: requestId,
+        pin,
       };
 
       console.log('[DataReview] Data purchase request prepared:', dataPayload);
@@ -150,44 +143,27 @@ export default function DataReviewPage() {
       const response = await paymentService.purchaseData(dataPayload);
       console.log('[DataReview] Purchase response received:', response);
 
-      if (response.success && response.data) {
-        // Now confirm with PIN if needed
-        console.log('[DataReview] Confirming purchase with PIN...');
-        const confirmResponse = await paymentService.confirmDataPurchase(
-          requestId,
-          { pin, request_id: requestId }
-        );
+      if (response.success) {
+        const backendRequestId = (response as any).transaction?.reference;
+        setTransactionId(backendRequestId || '');
+        setTransactionStatus('success');
+        setShowPINModal(false);
 
-        console.log('[DataReview] PIN confirmation response:', confirmResponse);
-
-        if (confirmResponse.success) {
-          setTransactionId(confirmResponse.data?.id || requestId);
-          setTransactionStatus('success');
-          setShowPINModal(false);
-
-          if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('dataFormData');
-          }
-
-          addToast({
-            message: 'Data purchased successfully!',
-            type: 'success',
-          });
-
-          console.log('[DataReview] Transaction successful, redirecting in 3 seconds...');
-          setTimeout(() => {
-            router.push('/dashboard/history');
-          }, 2500);
-        } else {
-          console.warn('[DataReview] PIN confirmation failed:', confirmResponse);
-          setTransactionStatus('error');
-          addToast({
-            message: confirmResponse.message || 'PIN verification failed. Please try again.',
-            type: 'error',
-          });
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('dataFormData');
         }
+
+        addToast({
+          message: 'Data purchased successfully!',
+          type: 'success',
+        });
+
+        console.log('[DataReview] Transaction successful, redirecting in 3 seconds...');
+        setTimeout(() => {
+          router.push('/dashboard/history');
+        }, 2500);
       } else {
-        console.warn('[DataReview] Purchase failed - unexpected response:', response);
+        console.warn('[DataReview] Purchase failed:', response);
         setShowPINModal(false);
         setTransactionStatus('error');
         

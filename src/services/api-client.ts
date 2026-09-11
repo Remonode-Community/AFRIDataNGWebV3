@@ -20,8 +20,6 @@ const PAYMENT_OPERATIONS = [
   '/vtu/pay',
   '/transactions/data/purchase',
   '/transactions/bills/pay',
-  '/vtu/pay/confirm',
-  '/transactions/data/purchase/confirm',
 ];
 
 console.log('[ApiClient] Initializing API Client with:', {
