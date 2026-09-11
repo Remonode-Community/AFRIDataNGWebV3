@@ -213,26 +213,15 @@ export default function ElectricityReviewPage() {
       </div>
 
       {/* Insufficient Balance Alert */}
-      {insufficientBalance && balanceInfo && (
+      {insufficientBalance && (
         <Card className="border-red-200 bg-red-50">
           <div className="flex gap-3">
             <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
             <div className="flex-1">
               <h3 className="font-semibold text-red-900 mb-2">Insufficient Balance</h3>
               <p className="text-sm text-red-700 mb-3">
-                You need <strong>{formatCurrency(balanceInfo.requiredAmount)}</strong> to complete
-                this payment.
+                Your wallet balance is insufficient to complete this payment. Please top up your wallet and try again.
               </p>
-              <div className="space-y-1 text-sm text-red-700 bg-red-100 p-3 rounded">
-                <div className="flex justify-between">
-                  <span>Current Balance:</span>
-                  <span>{formatCurrency(balanceInfo.currentBalance)}</span>
-                </div>
-                <div className="flex justify-between font-semibold border-t border-red-200 pt-1 mt-1">
-                  <span>Shortfall:</span>
-                  <span>{formatCurrency(balanceInfo.shortfall)}</span>
-                </div>
-              </div>
               <Button
                 size="sm"
                 variant="secondary"

@@ -173,7 +173,7 @@ export default function AdminReferralsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 p-3 sm:p-6">
       <AdminHeader
         title="Referral Programs"
         description="Manage referral programs and track earnings"

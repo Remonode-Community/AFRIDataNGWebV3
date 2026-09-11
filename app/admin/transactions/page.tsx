@@ -31,6 +31,12 @@ interface Transaction {
   transaction_date: string;
   reference: string;
   metadata?: Record<string, any>;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    phone_number?: string;
+  };
 }
 
 interface TransactionStats {
@@ -190,7 +196,7 @@ export default function AdminTransactionsPage() {
       key: 'search',
       label: 'Search',
       type: 'text' as const,
-      placeholder: 'Reference, user ID...',
+      placeholder: 'Reference, user name, email...',
     },
     {
       key: 'status',
@@ -231,9 +237,24 @@ export default function AdminTransactionsPage() {
       width: '120px',
     },
     {
-      key: 'user_id',
-      label: 'User ID',
-      width: '100px',
+      key: 'user',
+      label: 'User',
+      width: '180px',
+      render: (value: any, row: Transaction) => {
+        const userName = row.user?.name || 'Unknown User';
+        const userEmail = row.user?.email || '';
+        return (
+          <button
+            onClick={() => router.push(`/admin/users/${row.user_id}`)}
+            className="text-left hover:underline cursor-pointer"
+          >
+            <p className="text-sm font-medium text-blue-600 hover:text-blue-800">{userName}</p>
+            {userEmail && (
+              <p className="text-xs text-gray-500">{userEmail}</p>
+            )}
+          </button>
+        );
+      },
     },
     {
       key: 'transaction_type',
@@ -283,7 +304,7 @@ export default function AdminTransactionsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 p-3 sm:p-6">
       <AdminHeader
         title="Transactions"
         description="View and manage all platform transactions"
@@ -336,10 +357,19 @@ export default function AdminTransactionsPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">User ID</p>
-                <p className="mt-1 text-base font-semibold text-gray-900">
-                  {selectedTransaction.user_id}
-                </p>
+                <p className="text-sm font-medium text-gray-600">User</p>
+                <button
+                  onClick={() => {
+                    setShowDetails(false);
+                    router.push(`/admin/users/${selectedTransaction.user_id}`);
+                  }}
+                  className="mt-1 text-base font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-left"
+                >
+                  {selectedTransaction.user?.name || 'Unknown User'}
+                </button>
+                {selectedTransaction.user?.email && (
+                  <p className="text-sm text-gray-500">{selectedTransaction.user.email}</p>
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Type</p>

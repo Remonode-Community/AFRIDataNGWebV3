@@ -16,6 +16,11 @@ import {
   BulkUpdateAirtimeConversionStatusRequest,
   AirtimeConversionAnalytics,
 } from '@/types/api.types';
+import type {
+  ServiceSubsidyConfig,
+  ToggleSubsidyResponse,
+  UpdateSubsidyPayload,
+} from '@/types/vtu.types';
 
 class AdminService {
   async getDashboard(): Promise<ApiResponse<{ data: any }>> {
@@ -332,36 +337,51 @@ class AdminService {
 
   // NOTIFICATIONS
   async getNotificationStats(): Promise<any> {
-    return apiClient.get('/notifications/stats');
+    return apiClient.get('/admin/notifications/stats');
   }
 
-  async sendNotificationToUser(userId: number, title: string, body: string, type: string, priority: string = 'normal', metadata?: any): Promise<any> {
+  async getAdminNotifications(page = 1, per_page = 20, filters?: any): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('per_page', String(per_page));
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, String(value));
+      });
+    }
+    return apiClient.get(`/admin/notifications?${params.toString()}`);
+  }
+
+  async sendNotificationToUser(userId: number, title: string, body: string, type: string, priority: string = 'normal', channel: string = 'both', metadata?: any): Promise<any> {
     return apiClient.post('/admin/notifications/send-to-user', {
       user_id: userId,
       title,
       body,
       type,
       priority,
+      channel,
       metadata,
     });
   }
 
-  async sendNotificationToUsers(userIds: number[], title: string, body: string, type: string, priority: string = 'normal'): Promise<any> {
+  async sendNotificationToUsers(userIds: number[], title: string, body: string, type: string, priority: string = 'normal', channel: string = 'both'): Promise<any> {
     return apiClient.post('/admin/notifications/send-to-users', {
       user_ids: userIds,
       title,
       body,
       type,
       priority,
+      channel,
     });
   }
 
   async sendBroadcastCampaign(userIds: number[], title: string, body: string, options?: any): Promise<any> {
-    return apiClient.post('/admin/test/send-campaign', {
-      user_ids: userIds,
+    return apiClient.post('/admin/notifications/broadcast', {
       title,
       body,
-      options,
+      channel: options?.channel || 'both',
+      type: options?.type || 'system',
+      priority: options?.priority || 'normal',
     });
   }
 
@@ -512,6 +532,117 @@ class AdminService {
     return apiClient.put(`/admin/airtime-conversions/${conversionId}/retry-funding`, {
       notes,
     });
+  }
+
+  // ============= VTU SUBSIDY ENDPOINTS =============
+
+  /**
+   * Get all VTU services with their subsidy configurations
+   */
+  async getVTUServices(): Promise<ApiResponse<ServiceSubsidyConfig[]>> {
+    return apiClient.get('/admin/vtu/services');
+  }
+
+  /**
+   * Get a single VTU service with its subsidy configuration
+   */
+  async getVTUService(serviceId: string): Promise<ApiResponse<ServiceSubsidyConfig>> {
+    return apiClient.get(`/admin/vtu/services/${serviceId}`);
+  }
+
+  /**
+   * Toggle subsidy enabled/disabled for a VTU service
+   */
+  async toggleVTUSubsidy(serviceId: string): Promise<ApiResponse<ToggleSubsidyResponse>> {
+    return apiClient.put(`/admin/vtu/services/${serviceId}/subsidy/toggle`);
+  }
+
+  /**
+   * Update subsidy configuration for a VTU service
+   */
+  async updateVTUSubsidyConfig(
+    serviceId: string,
+    data: UpdateSubsidyPayload
+  ): Promise<ApiResponse<ServiceSubsidyConfig>> {
+    return apiClient.put(`/admin/vtu/services/${serviceId}/subsidy`, data);
+  }
+
+  // ── Agent Management ──────────────────────────────────────────────────
+
+  async getAdminAgents(page = 1, per_page = 20, filters?: any): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('per_page', String(per_page));
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, String(value));
+      });
+    }
+    return apiClient.get(`/admin/agents?${params.toString()}`);
+  }
+
+  async getAdminAgent(agentId: number): Promise<any> {
+    return apiClient.get(`/admin/agents/${agentId}`);
+  }
+
+  async createAdminAgent(data: { user_id: number; commission_rate?: number; notes?: string }): Promise<any> {
+    return apiClient.post('/admin/agents', data);
+  }
+
+  async updateAdminAgent(agentId: number, data: { status?: string; commission_rate?: number; notes?: string }): Promise<any> {
+    return apiClient.put(`/admin/agents/${agentId}`, data);
+  }
+
+  async getAdminAgentWallet(agentId: number): Promise<any> {
+    return apiClient.get(`/admin/agents/${agentId}/wallet`);
+  }
+
+  async getAdminAgentCommissions(agentId: number, filters?: any): Promise<any> {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, String(value));
+      });
+    }
+    return apiClient.get(`/admin/agents/${agentId}/commissions?${params.toString()}`);
+  }
+
+  async getAdminAgentCustomers(agentId: number): Promise<any> {
+    return apiClient.get(`/admin/agents/${agentId}/customers`);
+  }
+
+  async updateAdminAgentRates(agentId: number, rates: any[]): Promise<any> {
+    return apiClient.put(`/admin/agents/${agentId}/rates`, { rates });
+  }
+
+  async assignAgentCustomer(agentId: number, userId: number): Promise<any> {
+    return apiClient.post(`/admin/agents/${agentId}/assign-customer`, { user_id: userId });
+  }
+
+  async removeAgentCustomer(agentId: number, userId: number): Promise<any> {
+    return apiClient.delete(`/admin/agents/${agentId}/remove-customer/${userId}`);
+  }
+
+  // ── Agent Fund Requests ───────────────────────────────────────────────
+
+  async getAgentFundRequests(page = 1, per_page = 20, filters?: any): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('per_page', String(per_page));
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, String(value));
+      });
+    }
+    return apiClient.get(`/admin/agent-fund-requests?${params.toString()}`);
+  }
+
+  async approveAgentFundRequest(requestId: number): Promise<any> {
+    return apiClient.put(`/admin/agent-fund-requests/${requestId}/approve`, {});
+  }
+
+  async rejectAgentFundRequest(requestId: number, note?: string): Promise<any> {
+    return apiClient.put(`/admin/agent-fund-requests/${requestId}/reject`, { note });
   }
 }
 

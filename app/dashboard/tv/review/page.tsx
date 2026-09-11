@@ -33,6 +33,8 @@ interface TVFormData {
   variationName?: string;
   variationAmount?: string;
   smartcard?: string;
+  subsidizedAmount?: number;
+  savings?: number;
 }
 
 type TransactionStatus = 'idle' | 'verifying' | 'verified' | 'processing' | 'success' | 'error';
@@ -187,20 +189,39 @@ export default function TVReviewPage() {
         }, 3000);
       } else {
         setTransactionStatus('error');
+
+        if ((response as any)?.code === 'INSUFFICIENT_USER_BALANCE') {
+          addToast({
+            message: 'Insufficient wallet balance. Please top up your wallet and try again.',
+            type: 'error',
+          });
+        } else {
+          addToast({
+            message:
+              (response as any)?.message ||
+              (response as any)?.error ||
+              'Payment failed. Please try again or use a different payment method.',
+            type: 'error',
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error('[TVReview] Payment error:', error);
+      setTransactionStatus('error');
+
+      const errorData = error?.response?.data || error;
+
+      if (errorData?.code === 'INSUFFICIENT_USER_BALANCE') {
         addToast({
-          message:
-            response?.message ||
-            'Payment failed. Please try again or use a different payment method.',
+          message: 'Insufficient wallet balance. Please top up your wallet and try again.',
+          type: 'error',
+        });
+      } else {
+        addToast({
+          message: errorData?.error || errorData?.message || 'An error occurred during payment. Please try again.',
           type: 'error',
         });
       }
-    } catch (error) {
-      console.error('[TVReview] Payment error:', error);
-      setTransactionStatus('error');
-      addToast({
-        message: 'An error occurred during payment. Please try again.',
-        type: 'error',
-      });
     } finally {
       setIsProcessing(false);
       setShowPINModal(false);
@@ -210,6 +231,10 @@ export default function TVReviewPage() {
   const handleBack = () => {
     router.push('/dashboard/tv');
   };
+
+  const originalAmount = parseFloat(formData?.variationAmount || '0');
+  const displayAmount = formData?.subsidizedAmount || originalAmount;
+  const hasSubsidy = formData?.subsidizedAmount !== undefined && formData?.savings !== undefined && formData.savings > 0;
 
   if (!formData) {
     return (
@@ -303,10 +328,26 @@ export default function TVReviewPage() {
 
               <div className="flex items-start justify-between pt-2">
                 <div>
-                  <p className="text-sm text-gray-600">Amount</p>
-                  <p className="text-2xl font-bold text-[#a9b7ff]">
-                    ₦{parseFloat(formData.variationAmount || '0').toLocaleString()}
+                  <p className="text-sm text-gray-600">
+                    {hasSubsidy ? 'Discounted Amount' : 'Amount'}
                   </p>
+                  {hasSubsidy ? (
+                    <>
+                      <p className="text-2xl font-bold text-green-600">
+                        &#8358;{displayAmount.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-gray-500 line-through">
+                        &#8358;{originalAmount.toLocaleString()}
+                      </p>
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        Save &#8358;{formData!.savings!.toLocaleString()}
+                      </span>
+                    </>
+                  ) : (
+                    <p className="text-2xl font-bold text-[#a9b7ff]">
+                      &#8358;{originalAmount.toLocaleString()}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -457,20 +498,39 @@ export default function TVReviewPage() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Subtotal</span>
                 <span className="font-semibold text-gray-900">
-                  ₦{parseFloat(formData.variationAmount || '0').toLocaleString()}
+                  &#8358;{originalAmount.toLocaleString()}
                 </span>
               </div>
+              {hasSubsidy && (
+                <div className="flex justify-between items-center">
+                  <span className="text-green-600">You Saved</span>
+                  <span className="font-semibold text-green-600">
+                    -&#8358;{formData!.savings!.toLocaleString()}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Fee</span>
-                <span className="font-semibold text-gray-900">₦0.00</span>
+                <span className="font-semibold text-gray-900">&#8358;0.00</span>
               </div>
             </div>
 
             <div className="flex justify-between items-center font-bold text-lg mb-6 pt-6 border-t border-gray-200">
               <span>Total</span>
-              <span className="text-[#a9b7ff]">
-                ₦{parseFloat(formData.variationAmount || '0').toLocaleString()}
-              </span>
+              {hasSubsidy ? (
+                <div className="text-right">
+                  <span className="text-[#a9b7ff]">
+                    &#8358;{displayAmount.toLocaleString()}
+                  </span>
+                  <p className="text-sm text-gray-500 line-through">
+                    &#8358;{originalAmount.toLocaleString()}
+                  </p>
+                </div>
+              ) : (
+                <span className="text-[#a9b7ff]">
+                  &#8358;{originalAmount.toLocaleString()}
+                </span>
+              )}
             </div>
 
             <Button

@@ -1,206 +1,213 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { TrendingUp, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+
 import { Card } from '@/components/shared/Card';
 import { Button } from '@/components/shared/Button';
 import { Spinner } from '@/components/shared/Spinner';
-import { Badge } from '@/components/shared/Badge';
-import { Input } from '@/components/shared/Input';
-import { TrendingUp } from 'lucide-react';
+import { agentService, AgentTransaction } from '@/services/agent.service';
+import { formatCurrency, formatDate } from '@/utils/format.utils';
 
 export default function AgentCommissionsPage() {
-  const [commissions, setCommissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterPeriod, setFilterPeriod] = useState('month');
+  const [commissions, setCommissions] = useState<AgentTransaction[]>([]);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+  });
+  const [dateFilter, setDateFilter] = useState({ from: '', to: '' });
 
-  useEffect(() => {
-    // Mock data - replace with API call
-    setCommissions([
-      {
-        id: 'COMM001',
-        transaction_id: 'TXN001',
-        customer: 'John Doe',
-        type: 'airtime',
-        amount: 5000,
-        commission: 250,
-        rate: '5%',
-        status: 'paid',
-        date: '2024-01-25',
-      },
-      {
-        id: 'COMM002',
-        transaction_id: 'TXN002',
-        customer: 'Jane Smith',
-        type: 'data',
-        amount: 2500,
-        commission: 100,
-        rate: '4%',
-        status: 'paid',
-        date: '2024-01-24',
-      },
-      {
-        id: 'COMM003',
-        transaction_id: 'TXN003',
-        customer: 'Mike Johnson',
-        type: 'bills',
-        amount: 25000,
-        commission: 500,
-        rate: '2%',
-        status: 'pending',
-        date: '2024-01-23',
-      },
-    ]);
-    setLoading(false);
-  }, []);
+  useEffect(() => { fetchCommissions(1); }, [dateFilter]);
 
-  const totalEarnings = commissions.reduce((sum, c) => sum + c.commission, 0);
-  const paidCommissions = commissions.reduce(
-    (sum, c) => sum + (c.status === 'paid' ? c.commission : 0),
-    0
-  );
-  const pendingCommissions = commissions.reduce(
-    (sum, c) => sum + (c.status === 'pending' ? c.commission : 0),
-    0
-  );
-
-  const getStatusVariant = (status: string) => {
-    return (status === 'paid' || status === 'success' || status === 'completed') ? 'success' : 'warning';
+  const fetchCommissions = async (page: number) => {
+    try {
+      setLoading(true);
+      const response = await agentService.getCommissions({
+        date_from: dateFilter.from || undefined,
+        date_to: dateFilter.to || undefined,
+        per_page: 20,
+      });
+      const data = response.data;
+      setCommissions(data.data || []);
+      setTotalEarned(data.total_earned || 0);
+      setPagination({
+        currentPage: data.pagination?.current_page || 1,
+        lastPage: data.pagination?.last_page || 1,
+        total: data.pagination?.total || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching commissions:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner />
-      </div>
-    );
-  }
+  const clearFilters = () => { setDateFilter({ from: '', to: '' }); };
+  const hasActiveFilters = dateFilter.from || dateFilter.to;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold text-gray-900">Commission Tracking</h1>
-        <p className="text-gray-600 mt-2">Monitor your earnings and commission status</p>
+        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Commissions</h1>
+        <p className="text-sm text-[#6b7280] mt-1">Track your commission earnings</p>
       </div>
 
-      <div className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 md:overflow-x-visible">
-        {[
-          { label: 'Total Earnings', value: `₦${totalEarnings.toLocaleString()}`, icon: '📈' },
-          { label: 'Paid', value: `₦${paidCommissions.toLocaleString()}`, icon: '✓' },
-          { label: 'Pending', value: `₦${pendingCommissions.toLocaleString()}`, icon: '⏳' },
-        ].map((stat) => (
-          <Card key={stat.label} className="min-w-full md:min-w-auto snap-start md:snap-start">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
-              </div>
-              <div className="text-4xl">{stat.icon}</div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Total Earned</p>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-[#059669]">
+                {formatCurrency(totalEarned)}
+              </p>
             </div>
-          </Card>
-        ))}
+            <div className="rounded-xl bg-emerald-50 p-2.5">
+              <TrendingUp className="h-5 w-5 text-[#059669]" />
+            </div>
+          </div>
+        </Card>
+        <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+          <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Total Commissions</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#111827]">{pagination.total}</p>
+        </Card>
+        <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+          <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Average Commission</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#111827]">
+            {pagination.total > 0 ? formatCurrency(totalEarned / pagination.total) : formatCurrency(0)}
+          </p>
+        </Card>
       </div>
 
-      <Card>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Commission Breakdown</h2>
-          <select
-            value={filterPeriod}
-            onChange={(e) => setFilterPeriod(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#a9b7ff]"
-          >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="year">This Year</option>
-          </select>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">
-                  Commission ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">
-                  Transaction Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">
-                  Commission
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Rate</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {commissions.map((comm) => (
-                <tr key={comm.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-mono text-gray-900">{comm.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{comm.customer}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0f2ff] text-[#8a96ff]">
-                      {comm.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">₦{comm.amount.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-green-600">
-                    ₦{comm.commission.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">{comm.rate}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <Badge variant={getStatusVariant(comm.status)} size="sm">
-                      {comm.status}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{comm.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {commissions.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No commissions found</p>
+      {/* Date Filter */}
+      <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-4">
+        <div className="flex items-center gap-3">
+          <Calendar className="h-4 w-4 text-[#6b7280] flex-shrink-0" />
+          <div className="flex items-center gap-3 flex-wrap">
+            <div>
+              <label className="block text-[11px] font-medium text-[#6b7280] mb-1">From</label>
+              <input
+                type="date"
+                value={dateFilter.from}
+                onChange={(e) => setDateFilter((prev) => ({ ...prev, from: e.target.value }))}
+                className="rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5ff7] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-[#6b7280] mb-1">To</label>
+              <input
+                type="date"
+                value={dateFilter.to}
+                onChange={(e) => setDateFilter((prev) => ({ ...prev, to: e.target.value }))}
+                className="rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5ff7] focus:border-transparent"
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="mt-5 flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] px-3 py-2 text-xs font-medium text-[#6b7280] hover:bg-[#f8fafc] transition-colors"
+              >
+                <X size={14} />
+                Clear
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Earnings Trend</h3>
-          <div className="space-y-3">
-            {['Jan', 'Feb', 'Mar'].map((month) => (
-              <div key={month} className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-600 w-8">{month}</span>
-                <div className="flex-1 bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: Math.random() * 100 + '%' }} />
-                </div>
-                <span className="text-sm font-semibold text-gray-900">
-                  ₦{Math.floor(Math.random() * 50000 + 10000)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
+      {/* Commissions Table */}
+      <Card className="rounded-2xl border border-[#e5e7eb] bg-white overflow-hidden">
+        <div className="border-b border-[#f1f5f9] px-5 py-4">
+          <h2 className="text-base font-bold text-[#111827]">Commission History</h2>
+        </div>
 
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Performing Days</h3>
-          <div className="space-y-3">
-            {['Tuesday', 'Thursday', 'Saturday'].map((day, idx) => (
-              <div key={day} className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">{day}</span>
-                <Badge variant="success" size="sm">
-                  ₦{(idx + 1) * 5000}
-                </Badge>
-              </div>
-            ))}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Spinner />
           </div>
-        </Card>
-      </div>
+        ) : commissions.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50">
+              <TrendingUp className="h-6 w-6 text-[#059669]" />
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-[#111827]">No commissions yet</h3>
+            <p className="mt-1 text-xs text-[#6b7280]">
+              Commissions will appear here when your customers make transactions.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-full">
+                <thead>
+                  <tr className="border-b border-[#f1f5f9] bg-[#fcfcfd]">
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Date</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Description</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Reference</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Amount</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Balance After</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commissions.map((commission) => (
+                    <tr key={commission.id} className="border-b border-[#f8fafc] last:border-0 hover:bg-[#fafafa] transition-colors">
+                      <td className="px-5 py-3 text-sm text-[#111827]">{formatDate(commission.created_at)}</td>
+                      <td className="px-5 py-3 text-sm text-[#111827]">{commission.description}</td>
+                      <td className="px-5 py-3 text-sm font-mono text-[#6b7280]">{commission.reference}</td>
+                      <td className="px-5 py-3 text-right">
+                        <span className="text-sm font-bold text-[#059669]">+{formatCurrency(commission.amount)}</span>
+                      </td>
+                      <td className="px-5 py-3 text-right text-sm font-semibold text-[#111827]">
+                        {formatCurrency(commission.balance_after)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {pagination.lastPage > 1 && (
+              <div className="flex items-center justify-between border-t border-[#f1f5f9] px-5 py-3">
+                <div className="text-xs text-[#6b7280]">
+                  Page <span className="font-semibold text-[#111827]">{pagination.currentPage}</span> of{' '}
+                  <span className="font-semibold text-[#111827]">{pagination.lastPage}</span> ·{' '}
+                  <span className="font-semibold text-[#111827]">{pagination.total}</span> total
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg text-xs"
+                    onClick={() => fetchCommissions(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 1}
+                  >
+                    <ChevronLeft size={14} />
+                    Prev
+                  </Button>
+                  <span className="rounded-lg bg-[#f8fafc] px-3 py-1.5 text-xs font-semibold text-[#111827]">
+                    {pagination.currentPage} / {pagination.lastPage}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg text-xs"
+                    onClick={() => fetchCommissions(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === pagination.lastPage}
+                  >
+                    Next
+                    <ChevronRight size={14} />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </Card>
     </div>
   );
 }

@@ -222,6 +222,12 @@ export interface Transaction {
   receipt_url?: string | null;
   created_at: string;
   updated_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    phone_number?: string;
+  };
 }
 
 export interface TransactionFilters {

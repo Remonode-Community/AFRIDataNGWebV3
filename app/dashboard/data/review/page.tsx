@@ -32,6 +32,8 @@ interface FormData {
   variationCode?: string;
   variationName?: string;
   variationAmount?: string;
+  subsidizedAmount?: number;
+  savings?: number;
 }
 
 type TransactionStatus = 'idle' | 'processing' | 'success' | 'error';
@@ -73,6 +75,8 @@ export default function DataReviewPage() {
   }, [router]);
 
   const amount = parseInt(formData?.variationAmount || '0');
+  const displayAmount = formData?.subsidizedAmount || amount;
+  const hasSubsidy = formData?.subsidizedAmount !== undefined && formData?.savings !== undefined && formData.savings > 0;
 
   const handleBack = () => {
     router.push('/dashboard/data');
@@ -187,17 +191,14 @@ export default function DataReviewPage() {
         setShowPINModal(false);
         setTransactionStatus('error');
         
-        // Handle specific error codes
-        if (response.error_code === 'INSUFFICIENT_USER_BALANCE') {
-          console.warn('[DataReview] Insufficient wallet balance detected');
-          const balanceData = response.data as any;
+        if ((response as any)?.code === 'INSUFFICIENT_USER_BALANCE') {
           addToast({
-            message: `Insufficient wallet balance. You need ₦${balanceData?.required_amount}, but your balance is ₦${balanceData?.current_balance}. Please top up your wallet and try again.`,
+            message: 'Insufficient wallet balance. Please top up your wallet and try again.',
             type: 'error',
           });
         } else {
           addToast({
-            message: response.message || 'Transaction failed. Please try again.',
+            message: (response as any)?.message || (response as any)?.error || 'Transaction failed. Please try again.',
             type: 'error',
           });
         }
@@ -205,8 +206,15 @@ export default function DataReviewPage() {
     } catch (error: any) {
       console.error('[DataReview] Payment error:', error);
 
-      // Handle idempotency errors
-      if (error.isDuplicateError) {
+      const errorData = error?.response?.data || error;
+
+      // Handle insufficient wallet balance
+      if (errorData?.code === 'INSUFFICIENT_USER_BALANCE') {
+        addToast({
+          message: 'Insufficient wallet balance. Please top up your wallet and try again.',
+          type: 'error',
+        });
+      } else if (error.isDuplicateError) {
         addToast({
           message: 'This data purchase has already been processed. Please check your history.',
           type: 'info',
@@ -218,7 +226,8 @@ export default function DataReviewPage() {
         });
       } else {
         const message =
-          error.message ||
+          errorData?.error ||
+          errorData?.message ||
           (typeof error === 'object' &&
           error !== null &&
           'response' in error &&
@@ -315,12 +324,33 @@ export default function DataReviewPage() {
               </div>
 
               <div className="flex items-center justify-between rounded-[22px] border border-[#dbe4ff] bg-[#f7f8ff] px-5 py-5">
-                <span className="text-base font-semibold text-[#111827]">
-                  Total Amount
-                </span>
-                <span className="text-2xl font-extrabold tracking-tight text-[#4a5ff7]">
-                  {formatCurrency(amount)}
-                </span>
+                <div>
+                  <span className="text-base font-semibold text-[#111827]">
+                    {hasSubsidy ? 'Discounted Amount' : 'Total Amount'}
+                  </span>
+                  {hasSubsidy && (
+                    <p className="mt-0.5 text-xs text-green-600">You are saving {formatCurrency(formData!.savings!)}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  {hasSubsidy ? (
+                    <>
+                      <span className="text-2xl font-extrabold tracking-tight text-green-600">
+                        {formatCurrency(displayAmount)}
+                      </span>
+                      <p className="text-sm text-gray-500 line-through">
+                        {formatCurrency(amount)}
+                      </p>
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        Save {formatCurrency(formData!.savings!)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-2xl font-extrabold tracking-tight text-[#a9b7ff]">
+                      {formatCurrency(amount)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
@@ -455,13 +485,32 @@ export default function DataReviewPage() {
                   {formatCurrency(amount)}
                 </span>
               </div>
+              {hasSubsidy && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-green-600">You Saved</span>
+                  <span className="font-semibold text-green-600">
+                    -{formatCurrency(formData!.savings!)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="mt-5 mb-6 flex items-center justify-between">
               <span className="text-base font-semibold text-[#111827]">Total</span>
-              <span className="text-2xl font-extrabold tracking-tight text-[#4a5ff7]">
-                {formatCurrency(amount)}
-              </span>
+              {hasSubsidy ? (
+                <div className="text-right">
+                  <span className="text-2xl font-extrabold tracking-tight text-green-600">
+                    {formatCurrency(displayAmount)}
+                  </span>
+                  <p className="text-sm text-gray-500 line-through">
+                    {formatCurrency(amount)}
+                  </p>
+                </div>
+              ) : (
+                <span className="text-2xl font-extrabold tracking-tight text-[#a9b7ff]">
+                  {formatCurrency(amount)}
+                </span>
+              )}
             </div>
 
             {transactionStatus === 'success' ? (

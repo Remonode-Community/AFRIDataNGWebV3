@@ -21,6 +21,12 @@ export interface ExtendedTransaction extends Transaction {
   transactionable_type?: string;
   transactionable_id?: string;
   transactionable?: Record<string, any>;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    phone_number?: string;
+  };
 }
 
 export interface TransactionsApiResponse {

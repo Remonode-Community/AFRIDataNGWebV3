@@ -20,7 +20,7 @@ import { Modal } from '@/components/shared/Modal';
 interface OfferCode {
   id: number;
   code: string;
-  type: 'percentage' | 'fixed';
+  type: 'percentage' | 'flat';
   value: number;
   expires_at: string;
   usage_limit: number;
@@ -47,7 +47,7 @@ export default function AdminOfferCodesPage() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     code: '',
-    type: 'fixed',
+    type: 'flat',
     value: '',
     expires_at: '',
     usage_limit: '',
@@ -116,7 +116,7 @@ export default function AdminOfferCodesPage() {
       setShowForm(false);
       setFormData({
         code: '',
-        type: 'fixed',
+        type: 'flat',
         value: '',
         expires_at: '',
         usage_limit: '',
@@ -155,12 +155,12 @@ export default function AdminOfferCodesPage() {
     },
     {
       title: 'Total Usage',
-      value: offerCodes.reduce((sum, o) => sum + o.uses, 0),
+      value: offerCodes.reduce((sum, o) => sum + (o.uses || 0), 0),
       change: { value: '+15.3%', direction: 'up' as const },
     },
     {
       title: 'Avg Usage/Code',
-      value: offerCodes.length > 0 ? Math.round(offerCodes.reduce((sum, o) => sum + o.uses, 0) / offerCodes.length) : 0,
+      value: offerCodes.length > 0 ? Math.round(offerCodes.reduce((sum, o) => sum + (o.uses || 0), 0) / offerCodes.length) : 0,
       change: { value: '+8.5%', direction: 'up' as const },
     },
   ];
@@ -273,7 +273,7 @@ export default function AdminOfferCodesPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 p-3 sm:p-6">
       <AdminHeader
         title="Offer Codes"
         description="Manage promotional codes and discounts"
@@ -283,7 +283,7 @@ export default function AdminOfferCodesPage() {
             setSelectedOffer(null);
             setFormData({
               code: '',
-              type: 'fixed',
+              type: 'flat',
               value: '',
               expires_at: '',
               usage_limit: '',
@@ -444,7 +444,7 @@ export default function AdminOfferCodesPage() {
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#a9b7ff] focus:ring-[#a9b7ff]"
                 >
-                  <option value="fixed">Fixed Amount</option>
+                  <option value="flat">Fixed Amount</option>
                   <option value="percentage">Percentage</option>
                 </select>
               </div>

@@ -57,12 +57,12 @@ export const AdminFilters: React.FC<AdminFiltersProps> = ({
 
   return (
     <Card className="mb-6">
-      <CardBody className="space-y-3 sm:space-y-4">
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <CardBody className="space-y-3">
+        <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-3 xl:grid-cols-4 scrollbar-hide">
           {filters.map((filter) => {
             if (filter.type === 'select') {
               return (
-                <div key={filter.key}>
+                <div key={filter.key} className="min-w-[140px] sm:min-w-0">
                   <label className="mb-2 block text-xs sm:text-sm font-medium text-gray-700">
                     {filter.label}
                   </label>
@@ -82,7 +82,7 @@ export const AdminFilters: React.FC<AdminFiltersProps> = ({
 
             if (filter.type === 'date') {
               return (
-                <div key={filter.key}>
+                <div key={filter.key} className="min-w-[160px] sm:min-w-0">
                   <label className="mb-2 block text-xs sm:text-sm font-medium text-gray-700">
                     {filter.label}
                   </label>
@@ -98,7 +98,7 @@ export const AdminFilters: React.FC<AdminFiltersProps> = ({
             }
 
             return (
-              <div key={filter.key}>
+              <div key={filter.key} className="min-w-[200px] sm:min-w-0 flex-1">
                 <label className="mb-2 block text-xs sm:text-sm font-medium text-gray-700">
                   {filter.label}
                 </label>
@@ -119,13 +119,13 @@ export const AdminFilters: React.FC<AdminFiltersProps> = ({
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+        <div className="flex gap-2 sm:gap-3 pt-2">
           <Button
             variant="primary"
             size="md"
             onClick={handleApply}
             disabled={loading}
-            className="w-full sm:w-auto"
+            className="flex-1 sm:flex-none"
           >
             Apply Filters
           </Button>
@@ -134,7 +134,7 @@ export const AdminFilters: React.FC<AdminFiltersProps> = ({
             size="md"
             onClick={handleReset}
             disabled={loading}
-            className="w-full sm:w-auto"
+            className="flex-1 sm:flex-none"
           >
             <RotateCcw className="h-4 w-4" />
             Reset

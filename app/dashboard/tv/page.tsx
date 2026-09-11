@@ -20,6 +20,8 @@ interface TVFormData {
   variationName?: string;
   variationAmount?: string;
   smartcard?: string;
+  subsidizedAmount?: number;
+  savings?: number;
 }
 
 export default function TVPage() {
@@ -159,6 +161,8 @@ export default function TVPage() {
           variationName: selectedPlan?.name,
           variationAmount: selectedPlan?.variation_amount,
           smartcard,
+          subsidizedAmount: selectedPlan?.subsidized?.enabled ? selectedPlan.subsidized.subsidized_amount : undefined,
+          savings: selectedPlan?.subsidized?.enabled ? selectedPlan.subsidized.savings : undefined,
         };
 
         console.log('[TVPage] Storing form data to session:', dataToStore);
@@ -375,41 +379,64 @@ export default function TVPage() {
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {variations.map((plan) => (
-                      <button
-                        key={plan.variation_code}
-                        onClick={() => {
-                          setSelectedVariation(plan.variation_code);
-                          setErrors((prev) => ({
-                            ...prev,
-                            variation: '',
-                          }));
-                        }}
-                        className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                          selectedVariation === plan.variation_code
-                            ? 'border-[#a9b7ff] bg-[#f7f8ff] shadow-md'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                              {plan.name}
-                            </p>
-                            {plan.fixedPrice === 'Yes' && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                Fixed price
+                    {variations.map((plan) => {
+                      const hasSubsidy = plan.subsidized?.enabled && plan.subsidized.savings > 0;
+                      return (
+                        <button
+                          key={plan.variation_code}
+                          onClick={() => {
+                            setSelectedVariation(plan.variation_code);
+                            setErrors((prev) => ({
+                              ...prev,
+                              variation: '',
+                            }));
+                          }}
+                          className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                            selectedVariation === plan.variation_code
+                              ? hasSubsidy
+                                ? 'border-green-500 bg-green-50/30 shadow-md'
+                                : 'border-[#a9b7ff] bg-[#f7f8ff] shadow-md'
+                              : hasSubsidy
+                              ? 'border-green-200 bg-white hover:border-green-300'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                                {plan.name}
                               </p>
-                            )}
+                              {plan.fixedPrice === 'Yes' && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Fixed price
+                                </p>
+                              )}
+                              {hasSubsidy && (
+                                <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                                  Save &#8358;{plan.subsidized!.savings.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-right ml-4">
+                              {hasSubsidy ? (
+                                <>
+                                  <p className="text-sm font-bold text-green-600">
+                                    &#8358;{plan.subsidized!.subsidized_amount.toLocaleString()}
+                                  </p>
+                                  <p className="text-xs text-gray-500 line-through">
+                                    &#8358;{parseFloat(plan.variation_amount).toLocaleString()}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-sm font-bold text-[#a9b7ff]">
+                                  &#8358;{parseFloat(plan.variation_amount).toLocaleString()}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <div className="text-right ml-4">
-                            <p className="text-sm font-bold text-[#a9b7ff]">
-                              ₦{parseFloat(plan.variation_amount).toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -536,13 +563,30 @@ export default function TVPage() {
                     <p className="text-sm font-semibold text-[#111827]">
                       {variations.find((v) => v.variation_code === selectedVariation)?.name}
                     </p>
-                    <p className="text-lg font-bold text-[#4a5ff7]">
-                      ₦
-                      {parseFloat(
-                        variations.find((v) => v.variation_code === selectedVariation)
-                          ?.variation_amount || '0'
-                      ).toLocaleString()}
-                    </p>
+                    {(() => {
+                      const selectedVar = variations.find((v) => v.variation_code === selectedVariation);
+                      const hasSubsidy = selectedVar?.subsidized?.enabled && selectedVar.subsidized.savings > 0;
+                      if (hasSubsidy) {
+                        return (
+                          <>
+                            <p className="text-lg font-bold text-green-600">
+                              &#8358;{selectedVar!.subsidized!.subsidized_amount.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-500 line-through">
+                              &#8358;{parseFloat(selectedVar!.variation_amount).toLocaleString()}
+                            </p>
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              Save &#8358;{selectedVar!.subsidized!.savings.toLocaleString()}
+                            </span>
+                          </>
+                        );
+                      }
+                      return (
+                        <p className="text-lg font-bold text-[#a9b7ff]">
+                          &#8358;{parseFloat(selectedVar?.variation_amount || '0').toLocaleString()}
+                        </p>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-[#9ca3af]">Not selected</p>

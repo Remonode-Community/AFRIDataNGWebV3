@@ -377,7 +377,7 @@ export default function AdminDashboardPage() {
         }
       `}</style>
 
-      <div className="space-y-8 p-4 sm:p-6 md:p-8">
+      <div className="space-y-5 p-3 sm:p-6 md:p-8">
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <section>
           <h1 className="text-3xl font-bold text-[#111827]">

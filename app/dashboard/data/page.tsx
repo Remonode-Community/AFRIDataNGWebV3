@@ -18,6 +18,8 @@ interface DataFormData {
   variationCode?: string;
   variationName?: string;
   variationAmount?: string;
+  subsidizedAmount?: number;
+  savings?: number;
 }
 
 export default function DataPage() {
@@ -135,6 +137,8 @@ export default function DataPage() {
         variationCode: variation.variation_code,
         variationName: variation.name,
         variationAmount: variation.variation_amount,
+        subsidizedAmount: variation.subsidized?.enabled ? variation.subsidized.subsidized_amount : undefined,
+        savings: variation.subsidized?.enabled ? variation.subsidized.savings : undefined,
       };
 
       console.log('[DataPage] Storing form data:', dataToStore);
@@ -262,36 +266,59 @@ export default function DataPage() {
               </div>
             ) : variations.length > 0 ? (
               <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                {variations.map((variation) => (
-                  <button
-                    key={variation.variation_code}
-                    onClick={() => {
-                      setSelectedVariation(variation.variation_code);
-                      setErrors({});
-                    }}
-                    className={`w-full rounded-[18px] border-2 p-4 text-left transition-all ${
-                      selectedVariation === variation.variation_code
-                        ? 'border-[#4a5ff7] bg-[#f7f8ff]'
-                        : 'border-[#e5e7eb] bg-white hover:border-[#cfd8ff]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-[#111827]">
-                          {variation.name}
-                        </p>
-                        <p className="mt-1 text-xs text-[#6b7280]">
-                          {variation.variation_code}
-                        </p>
+                {variations.map((variation) => {
+                  const hasSubsidy = variation.subsidized?.enabled && variation.subsidized.savings > 0;
+                  return (
+                    <button
+                      key={variation.variation_code}
+                      onClick={() => {
+                        setSelectedVariation(variation.variation_code);
+                        setErrors({});
+                      }}
+                      className={`w-full rounded-[18px] border-2 p-4 text-left transition-all ${
+                        selectedVariation === variation.variation_code
+                          ? hasSubsidy
+                            ? 'border-green-500 bg-green-50/30'
+                            : 'border-[#a9b7ff] bg-[#f7f8ff]'
+                          : hasSubsidy
+                          ? 'border-green-200 bg-white hover:border-green-300'
+                          : 'border-[#e5e7eb] bg-white hover:border-[#cfd8ff]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-[#111827]">
+                            {variation.name}
+                          </p>
+                          <p className="mt-1 text-xs text-[#6b7280]">
+                            {variation.variation_code}
+                          </p>
+                          {hasSubsidy && (
+                            <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              Save &#8358;{variation.subsidized!.savings.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          {hasSubsidy ? (
+                            <>
+                              <p className="text-lg font-bold text-green-600">
+                                &#8358;{variation.subsidized!.subsidized_amount.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-gray-500 line-through">
+                                &#8358;{parseFloat(variation.variation_amount).toLocaleString()}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-lg font-bold text-[#a9b7ff]">
+                              &#8358;{parseFloat(variation.variation_amount).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-[#4a5ff7]">
-                          ₦{parseFloat(variation.variation_amount).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-[18px] border-2 border-dashed border-[#e5e7eb] p-8 text-center">
@@ -335,13 +362,30 @@ export default function DataPage() {
                     <p className="text-sm font-semibold text-[#111827]">
                       {variations.find((v) => v.variation_code === selectedVariation)?.name}
                     </p>
-                    <p className="text-lg font-bold text-[#4a5ff7]">
-                      ₦
-                      {parseFloat(
-                        variations.find((v) => v.variation_code === selectedVariation)
-                          ?.variation_amount || '0'
-                      ).toLocaleString()}
-                    </p>
+                    {(() => {
+                      const selectedVar = variations.find((v) => v.variation_code === selectedVariation);
+                      const hasSubsidy = selectedVar?.subsidized?.enabled && selectedVar.subsidized.savings > 0;
+                      if (hasSubsidy) {
+                        return (
+                          <>
+                            <p className="text-lg font-bold text-green-600">
+                              &#8358;{selectedVar!.subsidized!.subsidized_amount.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-500 line-through">
+                              &#8358;{parseFloat(selectedVar!.variation_amount).toLocaleString()}
+                            </p>
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              Save &#8358;{selectedVar!.subsidized!.savings.toLocaleString()}
+                            </span>
+                          </>
+                        );
+                      }
+                      return (
+                        <p className="text-lg font-bold text-[#a9b7ff]">
+                          &#8358;{parseFloat(selectedVar?.variation_amount || '0').toLocaleString()}
+                        </p>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-[#9ca3af]">Not selected</p>

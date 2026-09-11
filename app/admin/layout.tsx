@@ -16,6 +16,8 @@ import {
   BarChart3,
   FileText,
   Zap,
+  Percent,
+  Briefcase,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,6 +27,9 @@ const adminNavItems = [
   { label: 'Transactions', href: '/admin/transactions', icon: CreditCard },
   { label: 'Airtime Conversions', href: '/admin/airtime-conversions', icon: Zap },
   { label: 'Services', href: '/admin/services', icon: Smartphone },
+  { label: 'VTU Subsidies', href: '/admin/vtu-subsidies', icon: Percent },
+  { label: 'Agents', href: '/admin/agents', icon: Briefcase },
+  { label: 'Agent Fund Requests', href: '/admin/agents/fund-requests', icon: FileText },
   { label: 'Offer Codes', href: '/admin/offer-codes', icon: Gift },
   { label: 'Referrals', href: '/admin/referrals', icon: Share2 },
   { label: 'Notifications', href: '/admin/notifications', icon: Bell },
@@ -116,7 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Backdrop for mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden"
+            className="fixed inset-0 z-40 bg-gray-900/20 backdrop-blur-sm md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}

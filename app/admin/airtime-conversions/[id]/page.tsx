@@ -287,11 +287,11 @@ export default function AirtimeConversionDetailPage() {
 
   // ── Main render ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className=" mx-auto">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8 px-3 sm:px-6 lg:px-8">
+      <div className="mx-auto space-y-5">
 
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => router.back()}
@@ -315,18 +315,18 @@ export default function AirtimeConversionDetailPage() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Conversion Info */}
-            <Card className="p-6">
+            <Card className="p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Conversion Details</h2>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
+                <div className="col-span-2">
                   <p className="text-gray-600 mb-1">Transaction ID</p>
                   <div className="flex items-center gap-2">
-                    <code className="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
+                    <code className="bg-gray-100 px-2 py-1 rounded font-mono text-xs break-all">
                       {conversion.transaction_id}
                     </code>
                     <button
                       onClick={() => copyToClipboard(conversion.transaction_id)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
                     >
                       <Copy className="h-4 w-4" />
                     </button>
@@ -364,7 +364,7 @@ export default function AirtimeConversionDetailPage() {
             </Card>
 
             {/* Amount Breakdown */}
-            <Card className="p-6">
+            <Card className="p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Amount Breakdown</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-center pb-3 border-b border-gray-200">
@@ -389,18 +389,18 @@ export default function AirtimeConversionDetailPage() {
             </Card>
 
             {/* User Information */}
-            <Card className="p-6">
+            <Card className="p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">User Information</h2>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 text-sm">
+                <div className="col-span-2 sm:col-span-1">
                   <p className="text-gray-600 mb-1">Name</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-gray-900 truncate">
                     {conversion.user?.first_name} {conversion.user?.last_name}
                   </p>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <p className="text-gray-600 mb-1">Email</p>
-                  <p className="font-medium text-gray-900">{conversion.user?.email}</p>
+                  <p className="font-medium text-gray-900 break-all text-xs sm:text-sm">{conversion.user?.email}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 mb-1">Phone</p>
@@ -425,7 +425,7 @@ export default function AirtimeConversionDetailPage() {
 
             {/* Status History */}
             {conversion.status_histories && conversion.status_histories.length > 0 ? (
-              <Card className="p-6">
+              <Card className="p-5 sm:p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Status History</h2>
                 <div className="space-y-3">
                   {conversion.status_histories.map((history: any, index: number) => (
@@ -458,7 +458,7 @@ export default function AirtimeConversionDetailPage() {
                 </div>
               </Card>
             ) : (
-              <Card className="p-6">
+              <Card className="p-5 sm:p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-2">Status History</h2>
                 <p className="text-sm text-gray-500">No status changes recorded yet.</p>
               </Card>
@@ -469,7 +469,7 @@ export default function AirtimeConversionDetailPage() {
           <div className="space-y-4">
 
             {/* Admin Actions */}
-            <Card className="p-6">
+            <Card className="p-5 sm:p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Admin Actions</h3>
               <div className="space-y-2">
                 {conversion.status === 'pending' && (

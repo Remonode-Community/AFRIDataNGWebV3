@@ -165,11 +165,9 @@ export default function AirtimeReviewPage() {
         setTransactionStatus('error');
         
         // Handle specific error codes
-        if (response.error_code === 'INSUFFICIENT_USER_BALANCE') {
-          console.warn('[AirtimeReview] Insufficient wallet balance detected');
-          const balanceData = response.data as any;
+        if ((response as any)?.error_code === 'INSUFFICIENT_USER_BALANCE') {
           addToast({
-            message: `Insufficient wallet balance. You need ₦${balanceData?.required_amount}, but your balance is ₦${balanceData?.current_balance}. Please top up your wallet and try again.`,
+            message: 'Insufficient wallet balance. Please top up your wallet and try again.',
             type: 'error',
           });
         } else {

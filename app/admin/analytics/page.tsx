@@ -147,7 +147,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-      className="space-y-8"
+      className="space-y-5"
     >
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -216,7 +216,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {walletStats.daily_volume && (
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">Today's Volume</h3>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div className="rounded-2xl bg-[#f8fafc] p-4">
@@ -300,7 +300,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">Commissions</h3>
               <p className="mt-2 text-3xl font-bold text-[#111827]">
                 {formatCompactCurrency(vtuStats.total_commission)}
@@ -310,7 +310,7 @@ export default function AdminAnalyticsPage() {
               </p>
             </Card>
 
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">Avg. Transaction</h3>
               <p className="mt-2 text-3xl font-bold text-[#111827]">
                 {formatCurrency(vtuStats.average_transaction)}
@@ -323,7 +323,7 @@ export default function AdminAnalyticsPage() {
 
           {/* Network Breakdown */}
           {vtuStats.by_network && Object.keys(vtuStats.by_network).length > 0 && (
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">Network Performance</h3>
               <div className="mt-4 space-y-4">
                 {Object.entries(vtuStats.by_network).map(([network, data]) => (
@@ -409,7 +409,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">New This Month</h3>
               <p className="mt-2 text-3xl font-bold text-[#111827]">
                 {userStats.new_users_this_month.toLocaleString()}
@@ -419,7 +419,7 @@ export default function AdminAnalyticsPage() {
               </p>
             </Card>
 
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">New This Week</h3>
               <p className="mt-2 text-3xl font-bold text-[#111827]">
                 {userStats.new_users_this_week.toLocaleString()}
@@ -429,7 +429,7 @@ export default function AdminAnalyticsPage() {
               </p>
             </Card>
 
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">Email Verified</h3>
               <p className="mt-2 text-3xl font-bold text-[#111827]">
                 {userStats.email_verified_users.toLocaleString()}
@@ -439,7 +439,7 @@ export default function AdminAnalyticsPage() {
               </p>
             </Card>
 
-            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+            <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
               <h3 className="font-semibold text-[#111827]">Unverified</h3>
               <p className="mt-2 text-3xl font-bold text-[#111827]">
                 {userStats.unverified_users.toLocaleString()}
@@ -454,7 +454,7 @@ export default function AdminAnalyticsPage() {
 
       {/* ── Empty State ────────────────────────────────────────────────────– */}
       {!walletStats && !vtuStats && !userStats && (
-        <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-12 text-center">
+        <Card className="rounded-[24px] border border-[#e5e7eb] bg-white p-6 sm:p-8 text-center">
           <Smartphone className="mx-auto h-12 w-12 text-[#d1d5db]" />
           <p className="mt-4 text-sm font-medium text-[#6b7280]">
             No analytics data available yet

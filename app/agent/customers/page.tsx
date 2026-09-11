@@ -1,146 +1,223 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Users, Search, Mail, Phone, ChevronLeft, ChevronRight, X } from 'lucide-react';
+
 import { Card } from '@/components/shared/Card';
 import { Button } from '@/components/shared/Button';
-import { Spinner } from '@/components/shared/Spinner';
-import { Badge } from '@/components/shared/Badge';
 import { Input } from '@/components/shared/Input';
-import { Search } from 'lucide-react';
+import { Spinner } from '@/components/shared/Spinner';
+import { agentService, AgentCustomer } from '@/services/agent.service';
+import { formatCurrency, formatDate } from '@/utils/format.utils';
 
 export default function AgentCustomersPage() {
-  const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [customers, setCustomers] = useState<AgentCustomer[]>([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const perPage = 20;
 
   useEffect(() => {
-    // Mock data - replace with API call
-    setCustomers([
-      {
-        id: '1',
-        first_name: 'Chidi',
-        last_name: 'Okafor',
-        email: 'chidi@example.com',
-        phone: '+234901234567',
-        total_spent: 125000,
-        transactions: 18,
-        last_transaction: '2024-01-25',
-      },
-      {
-        id: '2',
-        first_name: 'Amara',
-        last_name: 'Eze',
-        email: 'amara@example.com',
-        phone: '+234902345678',
-        total_spent: 89500,
-        transactions: 12,
-        last_transaction: '2024-01-24',
-      },
-      {
-        id: '3',
-        first_name: 'Tunde',
-        last_name: 'Adebayo',
-        email: 'tunde@example.com',
-        phone: '+234903456789',
-        total_spent: 45000,
-        transactions: 6,
-        last_transaction: '2024-01-23',
-      },
-    ]);
-    setLoading(false);
+    fetchCustomers(1);
   }, []);
 
-  const filteredCustomers = customers.filter((customer) =>
-    customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm)
-  );
+  const fetchCustomers = async (page: number) => {
+    try {
+      setLoading(true);
+      const response = await agentService.getCustomers(100);
+      const allCustomers = response.data.data || [];
+      setTotalCustomers(allCustomers.length);
+      const start = (page - 1) * perPage;
+      setCustomers(allCustomers.slice(start, start + perPage));
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) {
+  const filteredCustomers = customers.filter((customer) => {
+    const searchLower = searchInput.toLowerCase();
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner />
-      </div>
+      customer.first_name?.toLowerCase().includes(searchLower) ||
+      customer.last_name?.toLowerCase().includes(searchLower) ||
+      customer.email?.toLowerCase().includes(searchLower) ||
+      customer.phone_number?.includes(searchInput)
     );
-  }
+  });
+
+  const totalPages = Math.ceil(totalCustomers / perPage);
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">My Customers</h1>
-          <p className="text-gray-600 mt-2">Manage and monitor your customer base</p>
-        </div>
-        <Button onClick={() => setShowAddModal(true)}>Add Customer</Button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">My Customers</h1>
+        <p className="text-sm text-[#6b7280] mt-1">Customers assigned to you</p>
       </div>
 
-      <div className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 md:overflow-x-visible">
-        {[
-          { label: 'Total Customers', value: customers.length.toString() },
-          { label: 'Total Revenue', value: `₦${customers.reduce((sum, c) => sum + c.total_spent, 0).toLocaleString()}` },
-          { label: 'Average Transaction', value: `₦${Math.round(customers.reduce((sum, c) => sum + c.total_spent, 0) / customers.reduce((sum, c) => sum + c.transactions, 1)).toLocaleString()}` },
-        ].map((stat) => (
-          <Card key={stat.label} className="min-w-full md:min-w-auto snap-start md:snap-start">
-            <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
-          </Card>
-        ))}
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+          <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Total Customers</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#111827]">{totalCustomers}</p>
+        </Card>
+        <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+          <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Total Transactions</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#111827]">
+            {customers.reduce((sum, c) => sum + (c.transaction_count || 0), 0)}
+          </p>
+        </Card>
+        <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
+          <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Total Revenue</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#111827]">
+            {formatCurrency(customers.reduce((sum, c) => sum + Number(c.total_spent || 0), 0))}
+          </p>
+        </Card>
       </div>
 
-      <Card>
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+      {/* Search */}
+      <Card className="rounded-2xl border border-[#e5e7eb] bg-white p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
             <Input
-              label="Search"
               placeholder="Search by name, email, or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              icon={<Search size={16} />}
             />
           </div>
+          {searchInput && (
+            <button
+              onClick={() => setSearchInput('')}
+              className="flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] px-3 py-2 text-xs font-medium text-[#6b7280] hover:bg-[#f8fafc] transition-colors"
+            >
+              <X size={14} />
+              Clear
+            </button>
+          )}
+        </div>
+      </Card>
+
+      {/* Customers Table */}
+      <Card className="rounded-2xl border border-[#e5e7eb] bg-white overflow-hidden">
+        <div className="border-b border-[#f1f5f9] px-5 py-4">
+          <h2 className="text-base font-bold text-[#111827]">
+            Customers ({filteredCustomers.length})
+          </h2>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Total Spent</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Transactions</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Last Transaction</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {customer.first_name} {customer.last_name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{customer.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{customer.phone}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                    ₦{customer.total_spent.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{customer.transactions}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{customer.last_transaction}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <button className="text-[#a9b7ff] hover:text-[#9da9ff] font-medium">View</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredCustomers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No customers found</p>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Spinner />
           </div>
+        ) : filteredCustomers.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
+              <Users className="h-6 w-6 text-[#475569]" />
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-[#111827]">No customers found</h3>
+            <p className="mt-1 text-xs text-[#6b7280]">
+              {searchInput ? 'No customers match your search.' : 'No customers have been assigned to you yet.'}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-full">
+                <thead>
+                  <tr className="border-b border-[#f1f5f9] bg-[#fcfcfd]">
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Customer</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Contact</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Transactions</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Total Spent</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#6b7280]">Assigned</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCustomers.map((customer) => (
+                    <tr key={customer.id} className="border-b border-[#f8fafc] last:border-0 hover:bg-[#fafafa] transition-colors">
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-[#eef2ff] flex items-center justify-center">
+                            <span className="text-xs font-bold text-[#4a5ff7]">
+                              {customer.first_name?.[0]}{customer.last_name?.[0]}
+                            </span>
+                          </div>
+                          <p className="text-sm font-semibold text-[#111827]">
+                            {customer.first_name} {customer.last_name}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="space-y-0.5">
+                          <p className="text-xs text-[#6b7280] flex items-center gap-1.5">
+                            <Mail size={12} /> {customer.email}
+                          </p>
+                          <p className="text-xs text-[#6b7280] flex items-center gap-1.5">
+                            <Phone size={12} /> {customer.phone_number}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3 text-right text-sm font-semibold text-[#111827]">
+                        {customer.transaction_count || 0}
+                      </td>
+                      <td className="px-5 py-3 text-right text-sm font-bold text-[#111827]">
+                        {formatCurrency(customer.total_spent || 0)}
+                      </td>
+                      <td className="px-5 py-3 text-xs text-[#6b7280]">
+                        {customer.pivot?.assigned_at ? formatDate(customer.pivot.assigned_at) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-[#f1f5f9] px-5 py-3">
+                <div className="text-xs text-[#6b7280]">
+                  Page <span className="font-semibold text-[#111827]">{currentPage}</span> of{' '}
+                  <span className="font-semibold text-[#111827]">{totalPages}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg text-xs"
+                    onClick={() => {
+                      const newPage = currentPage - 1;
+                      setCurrentPage(newPage);
+                      fetchCustomers(newPage);
+                    }}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft size={14} />
+                    Prev
+                  </Button>
+                  <span className="rounded-lg bg-[#f8fafc] px-3 py-1.5 text-xs font-semibold text-[#111827]">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg text-xs"
+                    onClick={() => {
+                      const newPage = currentPage + 1;
+                      setCurrentPage(newPage);
+                      fetchCustomers(newPage);
+                    }}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight size={14} />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </Card>
     </div>

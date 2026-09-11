@@ -129,6 +129,14 @@ class VTUService {
         console.log('[VTUService] Detected nested response structure for payment, extracting nested data');
         result = result.data;
       }
+
+      // If no content/data wrapper, check if the response itself has error/success fields
+      if (!result && response && typeof response === 'object' && !Array.isArray(response)) {
+        const resp = response as any;
+        if (resp.code || resp.error || resp.success === false) {
+          result = resp;
+        }
+      }
       
       console.log('[VTUService] Payment result extracted:', result);
       return result;

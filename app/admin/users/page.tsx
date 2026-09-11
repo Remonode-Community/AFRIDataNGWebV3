@@ -281,7 +281,7 @@ export default function AdminUsersPage() {
   return (
     <div
       style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-      className="space-y-8"
+      className="space-y-5"
     >
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -557,7 +557,7 @@ export default function AdminUsersPage() {
                         <p className="text-base font-bold text-[#111827]">
                           {u.first_name} {u.last_name}
                         </p>
-                        <p className="text-sm text-[#6b7280]">{u.email}</p>
+                        <p className="text-sm text-[#6b7280] truncate">{u.email}</p>
                       </div>
                     </div>
                     <Badge variant={getStatusVariant(u.status)} size="sm">

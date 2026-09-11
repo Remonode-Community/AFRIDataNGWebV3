@@ -125,12 +125,12 @@ export default function BillsPage() {
         });
         success('Meter verified successfully!');
         setStep('payment');
-      } else if (response?.code === '012') {
+      } else if ((response as any)?.code === '012') {
         setMeterError('Verification already in progress. Please wait a moment and try again.');
-      } else if (response?.code === '015') {
+      } else if ((response as any)?.code === '015') {
         setMeterError('Invalid meter number for this provider');
       } else {
-        setMeterError(response?.response_description || response?.content?.errors || 'Meter verification failed');
+        setMeterError((response as any)?.response_description || (response as any)?.content?.errors || 'Meter verification failed');
       }
     } catch (err: any) {
       console.error('[MeterVerification] Error verifying meter:', err);
@@ -572,24 +572,14 @@ export default function BillsPage() {
             </div>
 
             {/* Insufficient Balance Alert */}
-            {insufficientBalance && balanceInfo && (
+            {insufficientBalance && (
               <div className="mb-6 flex items-start gap-3 rounded-[18px] border border-[#fca5a5] bg-[#fef2f2] p-4">
                 <AlertCircle className="text-[#dc2626] flex-shrink-0 mt-0.5" size={20} />
                 <div className="flex-1">
                   <h3 className="font-semibold text-[#dc2626] mb-2">Insufficient Balance</h3>
                   <p className="text-sm text-[#991b1b] mb-3">
-                    You need {formatCurrency(balanceInfo.requiredAmount)} to complete this payment.
+                    Your wallet balance is insufficient to complete this payment. Please top up your wallet and try again.
                   </p>
-                  <div className="space-y-2 text-sm text-[#7f1d1d] bg-[#fee2e2] p-3 rounded-lg mb-4">
-                    <div className="flex justify-between">
-                      <span>Current Balance:</span>
-                      <span className="font-semibold">{formatCurrency(balanceInfo.currentBalance)}</span>
-                    </div>
-                    <div className="flex justify-between font-semibold border-t border-[#fecaca] pt-2 mt-2">
-                      <span>Shortfall:</span>
-                      <span>{formatCurrency(balanceInfo.shortfall)}</span>
-                    </div>
-                  </div>
                   <Button
                     size="sm"
                     className="w-full rounded-[12px]"

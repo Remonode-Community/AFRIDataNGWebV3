@@ -168,7 +168,7 @@ export default function AdminUserDetailPage() {
   }
 
   return (
-    <div className="space-y-8 py-6">
+    <div className="space-y-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#4a5ff7]">
@@ -193,7 +193,7 @@ export default function AdminUserDetailPage() {
 
       <div className="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
         <div className="space-y-5">
-          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-[#6b7280]">Profile summary</p>
@@ -243,7 +243,7 @@ export default function AdminUserDetailPage() {
             </div>
           </Card>
 
-          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-[#6b7280]">Wallet summary</p>
@@ -305,7 +305,7 @@ export default function AdminUserDetailPage() {
             </div>
           </Card>
 
-          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-[#6b7280]">Transaction counts</p>
@@ -334,7 +334,7 @@ export default function AdminUserDetailPage() {
         </div>
 
         <div className="space-y-5">
-          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-5 w-5 text-[#4a5ff7]" />
               <div>
@@ -364,7 +364,7 @@ export default function AdminUserDetailPage() {
             </div>
           </Card>
 
-          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
+          <Card className="rounded-[28px] border border-[#e5e7eb] bg-white p-4 sm:p-5 shadow-[0_10px_35px_rgba(0,0,0,0.04)]">
             <div className="flex items-center gap-3">
               <Link2 className="h-5 w-5 text-[#4a5ff7]" />
               <div>

@@ -122,7 +122,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                 className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 {/* Avatar */}
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#4a5ff7] to-[#a9b7ff] flex items-center justify-center text-white font-semibold text-sm">
+                <div className="h-10 w-10 rounded-full bg-[#4a5ff7] flex items-center justify-center text-white font-semibold text-sm">
                   {userInitials}
                 </div>
 
@@ -155,7 +155,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                   {/* User Info Section */}
                   <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#4a5ff7] to-[#a9b7ff] flex items-center justify-center text-white font-semibold">
+                      <div className="h-12 w-12 rounded-full bg-[#4a5ff7] flex items-center justify-center text-white font-semibold">
                         {userInitials}
                       </div>
                       <div>

@@ -396,24 +396,6 @@ export default function AirtimePage() {
         </div>
       </Card>
 
-      {/* Info Box */}
-      <Card className="bg-gradient-to-br from-[#f7f8ff] to-[#f0f2ff] border-[#dbe4ff] p-6 sm:p-8 shadow-[0_10px_35px_rgba(74,95,247,0.06)]">
-        <div className="flex gap-4">
-          <div className="flex-shrink-0">
-            <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-[#a9b7ff]">
-              <Phone className="text-white" size={24} />
-            </div>
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 text-base">Instant Delivery</h3>
-            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-              Airtime is delivered instantly to your phone. You'll receive a confirmation SMS once
-              the transaction is complete.
-            </p>
-          </div>
-        </div>
-      </Card>
-
       {/* Toast Notification is handled by UIStore */}
       <Toast />
     </div>
