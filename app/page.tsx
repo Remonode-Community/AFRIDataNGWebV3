@@ -141,7 +141,7 @@ const faqs = [
 function AdCarousel() {
   const slides = [
     {
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=800&q=80',
+      image: 'https://api.afridata.remonode.com/afri.png',
       title: 'Instant Airtime',
       subtitle: 'Recharge all networks instantly',
     },
@@ -187,6 +187,7 @@ function AdCarousel() {
               alt={slide.title}
               fill
               className="object-cover"
+              unoptimized
             />
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

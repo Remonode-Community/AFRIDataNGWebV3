@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.afridata.remonode.com',
+      },
     ],
   },
   async headers() {

@@ -114,8 +114,8 @@ export default function DashboardPage() {
           user?.id ? transactionService.getTransactions(String(user.id), { page: currentPage, per_page: 10 }) : Promise.resolve(null),
         ]);
 
-        if (walletRes?.data?.wallet) {
-          setWallet(walletRes.data.wallet);
+        if (walletRes?.data) {
+          setWallet(walletRes.data);
         }
 
         // Handle transaction response - it has nested structure with data.data

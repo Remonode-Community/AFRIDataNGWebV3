@@ -195,7 +195,7 @@ export default function DataPage() {
               Which network would you like to buy data from?
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {providers.map((provider) => (
                 <button
                   key={provider.serviceID}
