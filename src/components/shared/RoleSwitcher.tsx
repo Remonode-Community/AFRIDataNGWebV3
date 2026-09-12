@@ -94,12 +94,12 @@ export const RoleSwitcher: React.FC = () => {
       {/* Role Switcher Button */}
       <button
         onClick={() => setShowRoleMenu(!showRoleMenu)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors flex-shrink-0"
         title="Switch role"
       >
         <div className="flex items-center gap-2">
           {getRoleIcon(activeRole || user.roles[0])}
-          <span className="text-sm font-medium text-gray-700 capitalize hidden sm:inline">
+          <span className="text-sm font-medium text-gray-700 capitalize">
             {activeRole || user.roles[0]}
           </span>
         </div>
