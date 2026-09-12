@@ -12,7 +12,16 @@ import {
 } from '@/types/api.types';
 
 class WalletService {
-  async getBalance(): Promise<ApiResponse<{ wallet: Wallet }>> {
+  async getBalance(): Promise<ApiResponse<{
+    balance: number;
+    formatted_balance: string;
+    can_withdraw: boolean;
+    is_verified: boolean;
+    pin_locked: boolean;
+    has_pin: boolean;
+    dva_details: any;
+    funding_method: string;
+  }>> {
     return apiClient.get('/wallet/balance');
   }
 
