@@ -35,6 +35,15 @@ export const formatPhoneNumber = (phone: string): string => {
   return phone;
 };
 
+// Convert E.164 / international numbers to the local 11-digit format the API expects
+export const toLocalPhoneNumber = (phone: string): string => {
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  if (cleaned.startsWith('+234')) return `0${cleaned.slice(4)}`;
+  if (cleaned.startsWith('234') && cleaned.length === 13) return `0${cleaned.slice(3)}`;
+  if (cleaned.startsWith('+')) return cleaned.slice(1);
+  return cleaned;
+};
+
 // Truncate text
 export const truncateText = (text: string, length: number = 50): string => {
   if (text.length <= length) return text;

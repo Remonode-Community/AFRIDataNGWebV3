@@ -1,4 +1,5 @@
 import { apiClient } from './api-client';
+import { toLocalPhoneNumber } from '@/utils/format.utils';
 import {
   User,
   AuthResponse,
@@ -18,7 +19,18 @@ import {
 
 class AuthService {
   async register(data: RegisterRequest): Promise<ApiResponse<{ user: User }>> {
-    return apiClient.post('/auth/register', data);
+    // Map the form payload to the API contract:
+    // the backend expects `phone_number` (local 11-digit format) and `ref`.
+    const payload = {
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email.trim().toLowerCase(),
+      phone_number: toLocalPhoneNumber(data.phone),
+      password: data.password,
+      password_confirmation: data.password_confirmation,
+      ...(data.referral_code ? { ref: data.referral_code.trim().toUpperCase() } : {}),
+    };
+    return apiClient.post('/auth/register', payload);
   }
 
   async login(data: LoginRequest): Promise<ApiResponse<AuthResponse>> {
@@ -32,7 +44,15 @@ class AuthService {
   }
 
   async verifyEmail(data: VerifyEmailRequest): Promise<ApiResponse<{ user: User }>> {
-    return apiClient.post('/auth/verify-email', data);
+    // Backend endpoint is /auth/verify-email-with-otp and expects `otp` (not `code`)
+    return apiClient.post('/auth/verify-email-with-otp', {
+      email: data.email,
+      otp: data.code,
+    });
+  }
+
+  async resendEmailVerification(email: string): Promise<ApiResponse<void>> {
+    return apiClient.post('/auth/resend-email-verification-otp', { email });
   }
 
   async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<{ email: string }>> {

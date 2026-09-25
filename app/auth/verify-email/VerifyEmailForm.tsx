@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, BadgeCheck, MailCheck, RefreshCcw } from 'lucide-react';
@@ -19,7 +20,16 @@ export function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const defaultEmail = searchParams.get('email') || '';
 
-  const { verifyEmail, isLoading } = useAuth();
+  const { verifyEmail, resendVerification, isLoading } = useAuth();
+
+  const [resendIn, setResendIn] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   const {
     register,
@@ -40,8 +50,21 @@ export function VerifyEmailForm() {
   };
 
   const handleResendCode = async () => {
-    // Plug your resend verification logic here
-    // e.g. await resendVerificationCode({ email });
+    if (resendIn > 0 || !email) return;
+
+    const response = await resendVerification(email.trim().toLowerCase());
+    if (response?.success) {
+      setResendIn(60);
+      timerRef.current = setInterval(() => {
+        setResendIn((prev) => {
+          if (prev <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
   };
 
   return (
@@ -166,10 +189,11 @@ export function VerifyEmailForm() {
               <button
                 type="button"
                 onClick={handleResendCode}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#4a5ff7] hover:underline"
+                disabled={resendIn > 0 || isLoading || !email}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#4a5ff7] hover:underline disabled:text-[#999] disabled:no-underline disabled:cursor-not-allowed"
               >
-                <RefreshCcw size={14} />
-                Resend code
+                <RefreshCcw size={14} className={isLoading && resendIn === 0 ? 'animate-spin' : ''} />
+                {resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}
               </button>
 
               <div className="mt-4">

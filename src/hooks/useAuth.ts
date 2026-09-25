@@ -127,7 +127,13 @@ export const useAuth = () => {
           addToast({ type: 'error', message: response.message || 'Registration failed' });
         }
       } catch (err: any) {
-        const message = err.message || 'An error occurred during registration';
+        // Prefer field-level validation messages from the API (422 responses)
+        const validationErrors = err?.errors?.errors;
+        const message =
+          (Array.isArray(validationErrors) && validationErrors[0]) ||
+          err?.errors?.message ||
+          err.message ||
+          'An error occurred during registration';
         setError(message);
         addToast({ type: 'error', message });
       } finally {
@@ -160,6 +166,32 @@ export const useAuth = () => {
       }
     },
     [setIsLoading, setError, addToast, router]
+  );
+
+  const resendVerification = useCallback(
+    async (email: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await authService.resendEmailVerification(email);
+
+        if (response.success) {
+          addToast({ type: 'success', message: 'Verification code resent!' });
+        } else {
+          setError(response.message || 'Could not resend code');
+          addToast({ type: 'error', message: response.message || 'Could not resend code' });
+        }
+        return response;
+      } catch (err: any) {
+        const message = err.message || 'Could not resend verification code';
+        setError(message);
+        addToast({ type: 'error', message });
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [setIsLoading, setError, addToast]
   );
 
   const logout = useCallback(async () => {
@@ -199,6 +231,7 @@ export const useAuth = () => {
     login,
     register,
     verifyEmail,
+    resendVerification,
     logout,
   };
 };

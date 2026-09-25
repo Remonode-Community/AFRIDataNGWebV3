@@ -44,7 +44,8 @@ export const API_ENDPOINTS = {
     register: '/auth/register',
     login: '/auth/login',
     logout: '/auth/logout',
-    verifyEmail: '/auth/verify-email',
+    verifyEmail: '/auth/verify-email-with-otp',
+    resendEmailVerification: '/auth/resend-email-verification-otp',
   },
   users: {
     profile: '/users/profile',
